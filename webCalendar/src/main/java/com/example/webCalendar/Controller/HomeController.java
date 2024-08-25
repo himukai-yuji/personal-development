@@ -19,14 +19,17 @@ public class HomeController {
     @Autowired
     private CalendarService calendarService;
 
-    @PostMapping("/saveTodo")
+    // 複数のTODOを保存するメソッド
+    @PostMapping("/saveEvents")
     public ResponseEntity<Object> saveEvents(@RequestBody List<CalendarEntity> events) {
         for (CalendarEntity event : events) {
             calendarService.saveEvent(event);
         }
         return ResponseEntity.ok().build();
     }
-    @PostMapping("/saveEvents")
+
+    // 単一のTODOを保存するメソッド
+    @PostMapping("/saveTodo")
     public ResponseEntity<Void> saveTodo(@RequestBody CalendarEntity event) {
         calendarService.saveEvent(event);
         return ResponseEntity.ok().build();
