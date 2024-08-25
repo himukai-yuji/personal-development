@@ -74,14 +74,14 @@ function createCalendarTable(year, month) {
         // 日付+1
         countDay++;
         // tdタグ（日付有りが分かるようにクラス属性に"with_date"を設定）
-        _html += '<td class="with_date" id="date_${countDay}">${countDay}<textarea></textarea><button onClick="saveTodo(${countDay})">保存</button></td>';
+        _html += '<td class="with_date" id="date_${countDay}">${countDay}<textarea id=todo_${countDay}></textarea><button onClick="saveTodo(${countDay})">保存</button></td>';
       }
       // 日付が0以外で、日付が末日より小さい場合
       else if (countDay != 0 && countDay < monthOfEndDay) {
         // 日付+1
         countDay++;
         // tdタグ（日付有りが分かるようにクラス属性に"with_date"を設定）
-        _html += '<td class="with_date" id="date_${countDay}">${countDay}<textarea></textarea><button onClick="saveTodo(${countDay})">保存</button></td>';
+        _html += '<td class="with_date" id="date_${countDay}">${countDay}<textarea id=todo_${countDay}></textarea><button onClick="saveTodo(${countDay})">保存</button></td>';
       }
       else {
         // tdタグ（日付無しが分かるようにクラス属性に"no_date"を設定）
@@ -169,8 +169,16 @@ function saveEvents(events) {
 }
 
 // TODOを保存する関数
-function saveTodo(event) {
-    fetch('/calendar/saveTodo', {
+function saveTodo(day) {
+    const todoText = document.getElementById(`todo_${day}`).value;
+    const date = new Date(showDate.getFullYear(), showDate.getMonth(), day);
+
+    const event = {
+        date: date.toISOString().split('T')[0], // 'YYYY-MM-DD'形式に変換
+        todo: todoText
+    };
+
+    fetch('/calendar/saveEvents', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -179,15 +187,15 @@ function saveTodo(event) {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error('Failed to save todo');
         }
         return response.json();
     })
     .then(data => {
-        console.log('Todo saved successfully:', data);
+        alert('TODOが保存されました！');
     })
     .catch(error => {
-        console.error('Error saving todo:', error);
+        console.error('Error:', error);
     });
 }
 
