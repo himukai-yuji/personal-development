@@ -14,12 +14,19 @@ public class CalendarService {
     @Autowired
     private CalendarRepository calendarRepository;
 
-    public void saveEvent(CalendarEntity event) {
-        calendarRepository.save(event);
-    }
-
-    public List<CalendarEntity> getAllCalendarEvents() {
+    public List<CalendarEntity> getAllCalendars() {
         return calendarRepository.findAllCalendar();
     }
-}
 
+    public CalendarEntity saveCalendar(CalendarEntity calendarEntity) {
+        return calendarRepository.save(calendarEntity);
+    }
+
+    public CalendarEntity getCalendarById(Long id) {
+        return calendarRepository.findById(id).orElse(null);
+    }
+
+    public void deleteCalendar(Long id) {
+        calendarRepository.deleteById(id);
+    }
+}

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.example.webCalendar.Entity.CalendarEntity;
 
 @Repository
-public interface CalendarRepository extends JpaRepository<CalendarEntity, Integer> {
+public interface CalendarRepository extends JpaRepository<CalendarEntity, Long> {
     
     @Query(value = "SELECT * FROM calendar_table ORDER BY date", nativeQuery = true)
     List<CalendarEntity> findAllCalendar();

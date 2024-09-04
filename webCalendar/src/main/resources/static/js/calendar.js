@@ -1,184 +1,104 @@
-// 曜日の定義
 const week = ["日", "月", "火", "水", "木", "金", "土"];
+let today = new Date();
+let showDate = new Date(today.getFullYear(), today.getMonth(), 1);
 
-// 今日の日付
-var today = new Date();
-
-// 表示用の日付
-var showDate = new Date(today.getFullYear(), today.getMonth(), 1);
-
-// 表示された時
 window.onload = function () {
-  // カレンダーの表示（引数には表示用の日付を設定）
-  showCalendar(showDate);
+    showCalendar(showDate);
+    loadTodos();
 };
 
-/**
- * カレンダーの表示
- */
+// 日付をフォーマットする関数
+function formatDate(date) {
+    const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+    return new Intl.DateTimeFormat('ja-JP', options).format(date);
+}
+
 function showCalendar(date) {
-  // 年
-  var year = date.getFullYear();
-  // 月
-  var month = date.getMonth() + 1;
-  
-  // ヘッダーの年月に表示する文字列
-  var showDateStr = year + "年 " + month + "月";
-  
-  // ヘッダーの年月部分に埋め込み
-  document.querySelector('#year_month_label').innerHTML = showDateStr;
-  
-  // カレンダーテーブルを作成する（HTMLが返却される）
-  var calendarTable = createCalendarTable(year, month);
-  
-  // カレンダー表示部分に埋め込み
-  document.querySelector('#calendar_body').innerHTML = calendarTable;
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const showDateStr = `${year}年 ${month}月`;
+    document.querySelector('#year_month_label').innerHTML = showDateStr;
+    const calendarTable = createCalendarTable(year, month);
+    document.querySelector('#calendar_body').innerHTML = calendarTable;
 }
 
-/**
- * カレンダーテーブルの作成
- */
 function createCalendarTable(year, month) {
-  // HTML用の変数
-  var _html = '';
-  
-  // tableタグ
-  _html += '<table class="calendar_tbl">';
-  
-  // テーブルのヘッダー（曜日）
-  _html += '<tr>';
-  for (var i = 0; i < week.length; i++) {
-    _html += "<th>" + week[i] + "</th>";
-  }
-  _html += '</tr>';
-  
-  // ---------------------
-  
-  // 表示するカレンダー年月の1日の曜日を取得
-  var startDayOfWeek = new Date(year, month - 1, 1).getDay();
-  
-  // 日付
-  var countDay = 0;
-  
-  // 月の末日
-  var monthOfEndDay = new Date(year, month, 0).getDate()
-  
-  // 6行分繰り返し
-  for (var i = 0; i < 6; i++) {
+    let _html = '<table class="table table-bordered">';
     _html += '<tr>';
-    
-    // 7列（曜日の数）分繰り返し
-    for (var j = 0; j < week.length; j++) {
-      // １行目で開始曜日と同じ場合
-      if (i == 0 && j == startDayOfWeek) {
-        // 日付+1
-        countDay++;
-        // tdタグ（日付有りが分かるようにクラス属性に"with_date"を設定）
-        _html += '<td class="with_date" id="date_${countDay}">${countDay}<textarea id=todo_${countDay}></textarea><button onClick="saveTodo(${countDay})">保存</button></td>';
-      }
-      // 日付が0以外で、日付が末日より小さい場合
-      else if (countDay != 0 && countDay < monthOfEndDay) {
-        // 日付+1
-        countDay++;
-        // tdタグ（日付有りが分かるようにクラス属性に"with_date"を設定）
-        _html += '<td class="with_date" id="date_${countDay}">${countDay}<textarea id=todo_${countDay}></textarea><button onClick="saveTodo(${countDay})">保存</button></td>';
-      }
-      else {
-        // tdタグ（日付無しが分かるようにクラス属性に"no_date"を設定）
-        _html += '<td class="no_date"></td>';
-      }
-    }
-    _html += '</tr>';
-  }
-  _html += '</table>';
-  
-  // 組み立てたHTMLを返却
-  return _html;
-}
-
-/**
- * 前年
- */
-function prev_year() {
-  // 表示用の日付の年-1を設定
-  showDate.setFullYear(showDate.getFullYear() - 1);
-  // カレンダーの表示（引数には表示用の日付を設定）
-  showCalendar(showDate);
-}
-
-/**
- * 前月
- */
-function prev_month() {
-  // 表示用の日付の月-1を設定
-  showDate.setMonth(showDate.getMonth() - 1);
-  // カレンダーの表示（引数には表示用の日付を設定）
-  showCalendar(showDate);
-}
-
-/**
- * 今日
- */
-function now_month() {
-  // 表示用の日付に今日の日付を設定
-  showDate = new Date();
-  // カレンダーの表示（引数には表示用の日付を設定）
-  showCalendar(showDate);
-}
-
-/**
- * 来月
- */
-function next_month() {
-  // 表示用の日付の月+1を設定
-  showDate.setMonth(showDate.getMonth() + 1);
-  // カレンダーの表示（引数には表示用の日付を設定）
-  showCalendar(showDate);
-}
-
-/**
- * 来年
- */
-function next_year() {
-  // 表示用の日付の年+1を設定
-  showDate.setFullYear(showDate.getFullYear() + 1);
-  // カレンダーの表示（引数には表示用の日付を設定）
-  showCalendar(showDate);
-}
-// イベントを保存する関数
-function saveEvents(events) {
-    fetch('/calendar/saveEvents', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(events)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Events saved successfully:', data);
-    })
-    .catch(error => {
-        console.error('Error saving events:', error);
+    week.forEach(day => {
+        _html += `<th>${day}</th>`;
     });
+    _html += '</tr>';
+
+    const startDayOfWeek = new Date(year, month - 1, 1).getDay();
+    let countDay = 0;
+    const monthOfEndDay = new Date(year, month, 0).getDate();
+
+    for (let i = 0; i < 6; i++) {
+        _html += '<tr>';
+        for (let j = 0; j < week.length; j++) {
+            if (i === 0 && j === startDayOfWeek) {
+                countDay++;
+                _html += createTodoCell(countDay);
+            } else if (countDay !== 0 && countDay < monthOfEndDay) {
+                countDay++;
+                _html += createTodoCell(countDay);
+            } else {
+                _html += '<td></td>';
+            }
+        }
+        _html += '</tr>';
+    }
+    _html += '</table>';
+    return _html;
 }
 
-// TODOを保存する関数
+function createTodoCell(day) {
+    const date = new Date(showDate.getFullYear(), showDate.getMonth(), day);
+    const formattedDate = formatDate(date);
+    return `<td class="with_date" id="date_${day}">
+                ${formattedDate}
+                <textarea id="todo_${day}" class="form-control"></textarea>
+                <button class="btn btn-primary" onClick="saveTodo(${day})">保存</button>
+            </td>`;
+}
+
+function loadTodos() {
+    fetch('/HomeController/getTodos')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load todos: ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(todos => {
+            todos.forEach(todo => {
+                const date = new Date(todo.date);
+                const day = date.getDate();
+                document.getElementById(`todo_${day}`).value = todo.todo;
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('エラーが発生しました: ' + error.message);
+        });
+}
+
 function saveTodo(day) {
     const todoText = document.getElementById(`todo_${day}`).value;
-    const date = new Date(showDate.getFullYear(), showDate.getMonth(), day);
 
+    if (!todoText.trim()) {
+        alert('記入されていません');
+        return;
+    }
+
+    const date = new Date(showDate.getFullYear(), showDate.getMonth(), day);
     const event = {
-        date: date.toISOString().split('T')[0], // 'YYYY-MM-DD'形式に変換
+        date: date.toISOString().split('T')[0],
         todo: todoText
     };
 
-    fetch('/calendar/saveEvents', {
+    fetch('/HomeController/saveEvents', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -187,28 +107,41 @@ function saveTodo(day) {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Failed to save todo');
+            throw new Error('Failed to save todo: ' + response.statusText);
         }
         return response.json();
     })
     .then(data => {
         alert('TODOが保存されました！');
+        console.log('Saved TODO:', data);
     })
     .catch(error => {
         console.error('Error:', error);
+        alert('エラーが発生しました: ' + error.message);
     });
 }
 
-// 使用例
-const events = [
-    { date: '2024-08-25', title: 'Event 1' },
-    { date: '2024-08-26', title: 'Event 2' }
-];
+function prev_year() {
+    showDate.setFullYear(showDate.getFullYear() - 1);
+    showCalendar(showDate);
+}
 
-const todo = { date: '2024-08-25', todo: 'Buy groceries' };
+function prev_month() {
+    showDate.setMonth(showDate.getMonth() - 1);
+    showCalendar(showDate);
+}
 
-// イベントを保存
-saveEvents(events);
+function now_month() {
+    showDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    showCalendar(showDate);
+}
 
-// TODOを保存
-saveTodo(todo);
+function next_month() {
+    showDate.setMonth(showDate.getMonth() + 1);
+    showCalendar(showDate);
+}
+
+function next_year() {
+    showDate.setFullYear(showDate.getFullYear() + 1);
+    showCalendar(showDate);
+}
