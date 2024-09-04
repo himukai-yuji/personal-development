@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
 import lombok.Data;
 
 @Entity
@@ -18,12 +19,12 @@ public class CalendarEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
-    private int id; // フィールド名を小文字に変更
+    private Long id; // フィールド名を小文字に変更
     
-    @Column(name = "DATE")
+    @Column(name = "DATE",nullable=false)
     private LocalDate date; // フィールド名を小文字に変更
 
-    @Column(name = "TODO")
+    @Column(name = "TODO",nullable=false)
     private String todo; // フィールド名を小文字に変更
 }
 
