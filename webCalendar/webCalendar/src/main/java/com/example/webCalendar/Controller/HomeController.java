@@ -33,7 +33,10 @@ public class HomeController {
     }
 
     @PostMapping("/saveEvents")
+    @ResponseBody 
     public CalendarEntity saveEvent(@RequestBody CalendarEntity calendarEntity) {
-        return calendarService.saveCalendar(calendarEntity);
+        //受け取ったデータをコンソールに出力
+    	System.out.println("追加したカレンダー情報"+calendarEntity);
+    	return calendarService.saveCalendar(calendarEntity);
     }
 }

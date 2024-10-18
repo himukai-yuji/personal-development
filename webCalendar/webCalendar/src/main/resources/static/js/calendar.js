@@ -1,6 +1,7 @@
 const week = ["日", "月", "火", "水", "木", "金", "土"];
 let today = new Date();
 let showDate = new Date(today.getFullYear(), today.getMonth(), 1);
+let todos = [];
 
 window.onload = function () {
     
@@ -20,6 +21,8 @@ function showCalendar(todos,date) {
     document.querySelector('#year_month_label').innerHTML = showDateStr;
     const calendarTable = createCalendarTable(year, month);
     document.querySelector('#calendar_body').innerHTML = calendarTable;
+//TODOリストを日付に基づいてtextareaに挿入
+	insertTodosIntoTextareas(todos,year,month);
 }
 
 function createCalendarTable(year, month) {
@@ -56,10 +59,9 @@ function createCalendarTable(year, month) {
 function createTodoCell(day) {
     const date = new Date(showDate.getFullYear(), showDate.getMonth(), day);
     const formattedDate = formatDate(date);
-	const date = new todos.
     return `<td class="with_date" id="date_${day}">
                 ${formattedDate}
-                <textarea id="todo_${day}" class="form-control">"todos.todoの中身"</textarea>
+                <textarea id="todo_${day}" class="form-control"></textarea>
                 <button class="btn btn-primary" onClick="saveTodo(${day})">保存</button>
             </td>`;
 }
@@ -72,15 +74,28 @@ function loadTodos() {
             }
             return response.json();
         })
-        .then(todos => {
-			showCalendar(todos,date);
-			
-            });
-        })
+        .then(data => {
+			todos = data;
+			console.log(todos);
+			showCalendar(todos,showDate);
+            })
         .catch(error => {
             console.error('Error:', error);
             alert('エラーが発生しました: ' + error.message);
         });
+}
+
+function insertTodosIntoTextareas(todos, year, month) {
+    todos.forEach(todo => {
+        const todoDate = new Date(todo.date);
+        if (todoDate.getFullYear() === year && todoDate.getMonth() + 1 === month) {
+            const day = todoDate.getDate();
+            const textarea = document.getElementById(`todo_${day}`);
+            if (textarea) {
+                textarea.value = todo.todo; // TODOの内容をtextareaに挿入
+            }
+        }
+    });
 }
 
 function saveTodo(day) {
@@ -93,7 +108,7 @@ function saveTodo(day) {
 
     const date = new Date(showDate.getFullYear(), showDate.getMonth(), day);
     const event = {
-        date: date.toISOString().split('T')[0],
+        date: date.toISOString().split('T')[0],//YYYY-MM-DDの形
         title: todoText
     };
 
@@ -106,6 +121,7 @@ function saveTodo(day) {
     })
     .then(response => {
 		alert("save.response");
+		console.log(data);
         if (!response.ok) {
             throw new Error('Failed to save todo: ' + response.statusText);
         }
@@ -114,6 +130,7 @@ function saveTodo(day) {
     .then(data => {
         alert('TODOが保存されました！');
         console.log('Saved TODO:', data);
+		loadTodos();//データを再読み込みそて更新
     })
     .catch(error => {
         console.error('Error:', error);
@@ -124,25 +141,25 @@ function saveTodo(day) {
 // 月と年の移動
 function prev_year() {
     showDate.setFullYear(showDate.getFullYear() - 1);
-    showCalendar(showDate);
+    showCalendar(todos,showDate);
 }
 
 function prev_month() {
     showDate.setMonth(showDate.getMonth() - 1);
-    showCalendar(showDate);
+    showCalendar(todos,showDate);
 }
 
 function now_month() {
     showDate = new Date(today.getFullYear(), today.getMonth(), 1);
-    showCalendar(showDate);
+    showCalendar(todos,showDate);
 }
 
 function next_month() {
     showDate.setMonth(showDate.getMonth() + 1);
-    showCalendar(showDate);
+    showCalendar(todos,showDate);
 }
 
 function next_year() {
     showDate.setFullYear(showDate.getFullYear() + 1);
-    showCalendar(showDate);
+    showCalendar(todos,showDate);
 }
